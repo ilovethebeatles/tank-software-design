@@ -18,12 +18,11 @@ import ru.mipt.bit.platformer.graphics.impl.TankGraphics;
 import ru.mipt.bit.platformer.graphics.impl.TreeGraphics;
 import ru.mipt.bit.platformer.handler.InputHandler;
 import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.model.Field;
+import ru.mipt.bit.platformer.graphics.Field;
 import ru.mipt.bit.platformer.model.impl.Tree;
 import ru.mipt.bit.platformer.model.impl.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
 
-import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 

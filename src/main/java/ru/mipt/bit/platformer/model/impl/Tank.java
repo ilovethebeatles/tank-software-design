@@ -5,7 +5,7 @@ import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameUnit;
 
 public class Tank extends GameUnit {
-    private static final float MOVEMENT_SPEED = 0.4f;
+    static final float MOVEMENT_SPEED = 0.4f;
     private GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
 
