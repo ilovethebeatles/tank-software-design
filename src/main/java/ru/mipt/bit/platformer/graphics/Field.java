@@ -1,8 +1,9 @@
-package ru.mipt.bit.platformer.model;
+package ru.mipt.bit.platformer.graphics;
 
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.model.GameUnit;
 
 import java.util.ArrayList;
 import java.util.List;
