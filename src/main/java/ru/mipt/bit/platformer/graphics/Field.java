@@ -3,7 +3,7 @@ package ru.mipt.bit.platformer.graphics;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.GridPoint2;
-import ru.mipt.bit.platformer.model.GameUnit;
+import ru.mipt.bit.platformer.model.Obstacle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import java.util.List;
 public class Field {
     private final TiledMap tiledMap;
     private final TiledMapTileLayer groundLayer;
-    private final List<GameUnit> obstacles;
+    private final List<Obstacle> obstacles;
     private final int width;
     private final int height;
 
@@ -23,7 +23,7 @@ public class Field {
         this.height = groundLayer.getHeight();
     }
 
-    public void addObstacle(GameUnit obstacle) {
+    public void addObstacle(Obstacle obstacle) {
         obstacles.add(obstacle);
     }
 
@@ -32,7 +32,7 @@ public class Field {
             return true;
         }
 
-        for (GameUnit obstacle : obstacles) {
+        for (Obstacle obstacle : obstacles) {
             if (obstacle.getCoordinates().equals(coordinates)) {
                 return true;
             }
@@ -41,7 +41,7 @@ public class Field {
         return false;
     }
 
-    public List<GameUnit> getObstacles() {
+    public List<Obstacle> getObstacles() {
         return new ArrayList<>(obstacles);
     }
 

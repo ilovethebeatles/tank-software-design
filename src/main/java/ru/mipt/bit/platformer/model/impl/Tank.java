@@ -4,14 +4,18 @@ import com.badlogic.gdx.math.GridPoint2;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameUnit;
 
-public class Tank extends GameUnit {
-    static final float MOVEMENT_SPEED = 0.4f;
+public class Tank implements GameUnit {
+    public static final float MOVEMENT_SPEED = 0.4f;
+
+    private final GridPoint2 coordinates;
+    private float rotation;
     private GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
 
     public Tank(GridPoint2 coordinates) {
-        super(coordinates);
+        this.coordinates = new GridPoint2(coordinates);
         this.destinationCoordinates = new GridPoint2(coordinates);
+        this.rotation = 0f;
     }
 
     public void moveTo(Direction direction) {
@@ -26,10 +30,6 @@ public class Tank extends GameUnit {
         return movementProgress < 1f;
     }
 
-    public GridPoint2 getDestinationCoordinates() {
-        return new GridPoint2(destinationCoordinates);
-    }
-
     public float getMovementProgress() {
         return movementProgress;
     }
@@ -41,5 +41,24 @@ public class Tank extends GameUnit {
                 coordinates.set(destinationCoordinates);
             }
         }
+    }
+
+    @Override
+    public GridPoint2 getCoordinates() {
+        return new GridPoint2(coordinates);
+    }
+
+    @Override
+    public float getRotation() {
+        return rotation;
+    }
+
+    @Override
+    public void setRotation(float rotation) {
+        this.rotation = rotation;
+    }
+
+    public GridPoint2 getDestinationCoordinates() {
+        return new GridPoint2(destinationCoordinates);
     }
 }
