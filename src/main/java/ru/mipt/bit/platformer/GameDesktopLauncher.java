@@ -14,54 +14,86 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
-import ru.mipt.bit.platformer.graphics.impl.TankGraphics;
-import ru.mipt.bit.platformer.graphics.impl.TreeGraphics;
+import ru.mipt.bit.platformer.config.GameConfig;
+import ru.mipt.bit.platformer.factory.GameUnitFactory;
+import ru.mipt.bit.platformer.factory.GraphicsFactory;
+import ru.mipt.bit.platformer.factory.impl.DefaultGameUnitFactory;
+import ru.mipt.bit.platformer.factory.impl.DefaultGraphicsFactory;
+import ru.mipt.bit.platformer.graphics.Field;
+import ru.mipt.bit.platformer.graphics.GameUnitGraphics;
 import ru.mipt.bit.platformer.handler.InputHandler;
 import ru.mipt.bit.platformer.model.Direction;
-import ru.mipt.bit.platformer.graphics.Field;
-import ru.mipt.bit.platformer.model.impl.Tree;
+import ru.mipt.bit.platformer.model.GameUnit;
+import ru.mipt.bit.platformer.model.Obstacle;
 import ru.mipt.bit.platformer.model.impl.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
 public class GameDesktopLauncher implements ApplicationListener {
 
+    private final GameConfig config;
+    private final GameUnitFactory unitFactory;
+    private final GraphicsFactory graphicsFactory;
+
     private Batch batch;
     private Field field;
     private MapRenderer mapRenderer;
     private TileMovement tileMovement;
-    private TiledMapTileLayer groundLayer;
     private InputHandler inputHandler;
-    private Tank player;
-    private Tree treeObstacle;
-    private TankGraphics playerGraphics;
-    private TreeGraphics treeGraphics;
+
+    private GameUnit player;
+    private List<Obstacle> obstacles;
+    private List<GameUnitGraphics> graphics;
+
+    public GameDesktopLauncher() {
+        this.config = new GameConfig();
+        this.unitFactory = new DefaultGameUnitFactory();
+        this.graphicsFactory = new DefaultGraphicsFactory();
+    }
+
+    public GameDesktopLauncher(GameConfig config, GameUnitFactory unitFactory,
+                               GraphicsFactory graphicsFactory) {
+        this.config = config;
+        this.unitFactory = unitFactory;
+        this.graphicsFactory = graphicsFactory;
+    }
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         TiledMap tiledMap = new TmxMapLoader().load("level.tmx");
-        groundLayer = getSingleLayer(tiledMap);
+        TiledMapTileLayer groundLayer = getSingleLayer(tiledMap);
         mapRenderer = createSingleLayerMapRenderer(tiledMap, batch);
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
         field = new Field(tiledMap, groundLayer);
         inputHandler = new InputHandler();
-        player = new Tank(new GridPoint2(1, 1));
-        treeObstacle = new Tree(new GridPoint2(1, 3));
-        field.addObstacle(treeObstacle);
+        player = unitFactory.createTank(config.getPlayerStartPosition());
+        obstacles = new ArrayList<>();
+        for (GridPoint2 position : config.getObstaclePositions()) {
+            Obstacle obstacle = unitFactory.createTree(position);
+            obstacles.add(obstacle);
+            field.addObstacle(obstacle);
+        }
+        graphics = new ArrayList<>();
         Texture blueTankTexture = new Texture("images/tank_blue.png");
         Texture greenTreeTexture = new Texture("images/greenTree.png");
-        playerGraphics = new TankGraphics(new TextureRegion(blueTankTexture),
-                tileMovement, groundLayer, player);
-        treeGraphics = new TreeGraphics(new TextureRegion(greenTreeTexture),
-                groundLayer, treeObstacle);
+
+        graphics.add(graphicsFactory.createTankGraphics(
+                new TextureRegion(blueTankTexture), tileMovement, groundLayer, player));
+
+        for (Obstacle obstacle : obstacles) {
+            graphics.add(graphicsFactory.createTreeGraphics(
+                    new TextureRegion(greenTreeTexture), groundLayer, obstacle));
+        }
     }
 
     @Override
     public void resize(int width, int height) {
-
     }
 
     @Override
@@ -84,42 +116,46 @@ public class GameDesktopLauncher implements ApplicationListener {
     }
 
     private void handleInput() {
-        if (player.isMoving()) return;
-
-        inputHandler.update();
-        Direction direction = inputHandler.getLastDirection();
-
-        if (direction != null) {
-            GridPoint2 newPosition = new GridPoint2(player.getCoordinates()).add(direction.getVector());
-            if (!field.isCellBlocked(newPosition)) {
-                player.moveTo(direction);
+        if (player instanceof Tank) {
+            Tank tank = (Tank) player;
+            if (tank.isMoving()) return;
+            inputHandler.update();
+            Direction direction = inputHandler.getLastDirection();
+            if (direction != null) {
+                GridPoint2 newPosition = new GridPoint2(player.getCoordinates()).add(direction.getVector());
+                if (!field.isCellBlocked(newPosition)) {
+                    tank.moveTo(direction);
+                }
             }
         }
     }
 
     private void updateGameState(float deltaTime) {
-        player.updateMovementProgress(deltaTime);
-        playerGraphics.update(deltaTime);
-        treeGraphics.update(deltaTime);
+        if (player instanceof Tank) {
+            Tank tank = (Tank) player;
+            tank.updateMovementProgress(deltaTime);
+        }
+        for (GameUnitGraphics graphic : graphics) {
+            graphic.update(deltaTime);
+        }
     }
 
     private void renderGame() {
         mapRenderer.render();
         batch.begin();
-        drawTextureRegionUnscaled(batch, playerGraphics.getTextureRegion(),
-                playerGraphics.getBounds(), playerGraphics.getRotation());
-        drawTextureRegionUnscaled(batch, treeGraphics.getTextureRegion(),
-                treeGraphics.getBounds(), treeGraphics.getRotation());
+        for (GameUnitGraphics graphic : graphics) {
+            drawTextureRegionUnscaled(batch, graphic.getTextureRegion(),
+                    graphic.getBounds(), graphic.getRotation());
+        }
         batch.end();
     }
 
     @Override
     public void dispose() {
-        if (playerGraphics != null && playerGraphics.getTextureRegion() != null) {
-            playerGraphics.getTextureRegion().getTexture().dispose();
-        }
-        if (treeGraphics != null && treeGraphics.getTextureRegion() != null) {
-            treeGraphics.getTextureRegion().getTexture().dispose();
+        for (GameUnitGraphics graphic : graphics) {
+            if (graphic.getTextureRegion() != null) {
+                graphic.getTextureRegion().getTexture().dispose();
+            }
         }
         if (field != null && field.getTiledMap() != null) {
             field.getTiledMap().dispose();
