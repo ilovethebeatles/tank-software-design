@@ -2,8 +2,6 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-public interface GameUnit {
+public interface Obstacle {
     GridPoint2 getCoordinates();
-    float getRotation();
-    void setRotation(float rotation);
 }
