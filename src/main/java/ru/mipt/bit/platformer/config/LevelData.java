@@ -7,12 +7,9 @@ import java.util.List;
 
 @Getter
 @Setter
+@Data
+@AllArgsConstructor
 public class LevelData {
     private GridPoint2 playerStartPosition;
     private List<GridPoint2> obstaclePositions;
-
-    public LevelData(GridPoint2 playerStart, List<GridPoint2> obstacles) {
-        playerStartPosition = playerStart;
-        obstaclePositions = obstacles;
-    }
 }

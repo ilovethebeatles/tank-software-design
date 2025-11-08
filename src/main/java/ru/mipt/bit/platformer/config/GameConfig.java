@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.config;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+import java.io.IOException;
 import java.util.*;
 
 public class GameConfig {
@@ -30,9 +31,10 @@ public class GameConfig {
         }
     }
 
-    public GameConfig(String pathToLevelFile) {
-        LevelData levelData = LevelFileParser.parseLevel(pathToLevelFile);
-        playerStartPosition = levelData.
+    public GameConfig(String pathToLevelFile) throws IOException {
+        LevelData levelData = LevelFileParser.parseLevel("level_schema.txt");
+        playerStartPosition = levelData.getPlayerStartPosition();
+        obstaclePositions = levelData.getObstaclePositions();
     }
 
     public GameConfig(GridPoint2 playerStartPosition, List<GridPoint2> obstaclePositions) {
