@@ -26,10 +26,8 @@ public final class GdxGameUtils {
         TiledMapTileLayer tileLayer = getSingleLayer(tiledMap);
         float viewWidth = tileLayer.getWidth() * tileLayer.getTileWidth();
         float viewHeight = tileLayer.getHeight() * tileLayer.getTileHeight();
-
         OrthogonalTiledMapRenderer mapRenderer = new OrthogonalTiledMapRenderer(tiledMap, batch);
         mapRenderer.getViewBounds().set(0f, 0f, viewWidth, viewHeight);
-
         return mapRenderer;
     }
 

@@ -28,6 +28,7 @@ import ru.mipt.bit.platformer.model.Obstacle;
 import ru.mipt.bit.platformer.model.impl.Tank;
 import ru.mipt.bit.platformer.util.TileMovement;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,8 +51,8 @@ public class GameDesktopLauncher implements ApplicationListener {
     private List<Obstacle> obstacles;
     private List<GameUnitGraphics> graphics;
 
-    public GameDesktopLauncher() {
-        this.config = new GameConfig();
+    public GameDesktopLauncher() throws IOException {
+        this.config = new GameConfig(4, 4, 3);
         this.unitFactory = new DefaultGameUnitFactory();
         this.graphicsFactory = new DefaultGraphicsFactory();
     }
@@ -165,7 +166,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setWindowedMode(1280, 1024);
         new Lwjgl3Application(new GameDesktopLauncher(), config);
