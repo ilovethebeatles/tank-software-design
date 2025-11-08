@@ -2,9 +2,7 @@ package ru.mipt.bit.platformer.config;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GameConfig {
     private final GridPoint2 playerStartPosition;
@@ -15,6 +13,26 @@ public class GameConfig {
         this.obstaclePositions = Arrays.asList(
                 new GridPoint2(1, 3)
         );
+    }
+
+    public GameConfig(float height, float width, int obstaclesNum) {
+        Random random = new Random();
+        this.playerStartPosition = new GridPoint2(random.nextInt((int) width), random.nextInt((int) height));
+        this.obstaclePositions = new ArrayList<>(obstaclesNum);
+        for (int i = 0; i < obstaclesNum; ++i) {
+            GridPoint2 obstacle = new GridPoint2(0, 0);
+            for(int j = 0; j < i; ++j) {
+                while(obstacle.x == obstaclePositions.get(j).x && obstacle.y == obstaclePositions.get(j).y || obstacle.x == playerStartPosition.x && obstacle.y == playerStartPosition.y) {
+                    obstacle.set(random.nextInt((int) width), random.nextInt((int) height));
+                }
+            }
+            obstaclePositions.add(obstacle);
+        }
+    }
+
+    public GameConfig(String pathToLevelFile) {
+        LevelData levelData = LevelFileParser.parseLevel(pathToLevelFile);
+        playerStartPosition = levelData.
     }
 
     public GameConfig(GridPoint2 playerStartPosition, List<GridPoint2> obstaclePositions) {
