@@ -11,6 +11,8 @@ public class Tank implements GameUnit {
     private float rotation;
     private GridPoint2 destinationCoordinates;
     private float movementProgress = 1f;
+    private int maxHp = 100;
+    private int hp = 100;
 
     public Tank(GridPoint2 coordinates) {
         this.coordinates = new GridPoint2(coordinates);
@@ -60,5 +62,21 @@ public class Tank implements GameUnit {
 
     public GridPoint2 getDestinationCoordinates() {
         return new GridPoint2(destinationCoordinates);
+    }
+
+    public int getHp() {
+        return hp;
+    }
+
+    public int getMaxHp() {
+        return maxHp;
+    }
+
+    public void setHp(int hp) {
+        this.hp = Math.max(0, Math.min(hp, maxHp));
+    }
+
+    public float getHpRatio() {
+        return (float) hp / (float) maxHp;
     }
 }
