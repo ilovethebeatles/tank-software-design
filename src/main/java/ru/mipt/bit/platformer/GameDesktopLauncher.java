@@ -2,12 +2,14 @@ package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.ApplicationListener;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import ru.mipt.bit.platformer.ai.AiTankRuler;
 import ru.mipt.bit.platformer.command.impl.MoveCommand;
+import ru.mipt.bit.platformer.command.impl.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.config.GameConfig;
 import ru.mipt.bit.platformer.factory.GameUnitFactory;
 import ru.mipt.bit.platformer.factory.GraphicsFactory;
@@ -23,6 +26,8 @@ import ru.mipt.bit.platformer.factory.impl.DefaultGameUnitFactory;
 import ru.mipt.bit.platformer.factory.impl.DefaultGraphicsFactory;
 import ru.mipt.bit.platformer.graphics.Field;
 import ru.mipt.bit.platformer.graphics.GameUnitGraphics;
+import ru.mipt.bit.platformer.graphics.OverlayRenderable;
+import ru.mipt.bit.platformer.graphics.impl.HealthBarDecorator;
 import ru.mipt.bit.platformer.handler.InputHandler;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameUnit;
@@ -56,6 +61,8 @@ public class GameDesktopLauncher implements ApplicationListener {
     private List<Obstacle> obstacles;
     private List<GameUnitGraphics> graphics;
     private int aiCount = 3;
+    private ShapeRenderer shapeRenderer;
+    private boolean showHealthBars = false;
 
     public GameDesktopLauncher() throws IOException {
         this.unitFactory = new DefaultGameUnitFactory();
@@ -65,6 +72,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     @Override
     public void create() {
         batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
         TiledMap tiledMap = new TmxMapLoader().load("level.tmx");
         TiledMapTileLayer groundLayer = getSingleLayer(tiledMap);
         mapRenderer = createSingleLayerMapRenderer(tiledMap, batch);
@@ -84,11 +92,13 @@ public class GameDesktopLauncher implements ApplicationListener {
         graphics = new ArrayList<>();
         Texture blueTankTexture = new Texture("images/tank_blue.png");
         Texture greenTreeTexture = new Texture("images/greenTree.png");
-        graphics.add(graphicsFactory.createTankGraphics(
-                new TextureRegion(blueTankTexture), tileMovement, groundLayer, player));
+        GameUnitGraphics playerGfx = graphicsFactory.createTankGraphics(
+                new TextureRegion(blueTankTexture), tileMovement, groundLayer, player);
+        graphics.add(new HealthBarDecorator(playerGfx, (Tank) player));
         for (int i = 1; i < tanks.size(); i++) {
-            graphics.add(graphicsFactory.createTankGraphics(
-                    new TextureRegion(blueTankTexture), tileMovement, groundLayer, tanks.get(i)));
+            GameUnitGraphics aiGfx = graphicsFactory.createTankGraphics(
+                    new TextureRegion(blueTankTexture), tileMovement, groundLayer, tanks.get(i));
+            graphics.add(new HealthBarDecorator(aiGfx, tanks.get(i)));
         }
         for (Obstacle obstacle : obstacles) {
             graphics.add(graphicsFactory.createTreeGraphics(
@@ -124,6 +134,9 @@ public class GameDesktopLauncher implements ApplicationListener {
         Gdx.gl.glClearColor(0f, 0f, 0.2f, 1f);
         Gdx.gl.glClear(GL_COLOR_BUFFER_BIT);
         float deltaTime = Gdx.graphics.getDeltaTime();
+        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
+            new ToggleHealthBarsCommand(() -> showHealthBars, v -> showHealthBars = v).execute();
+        }
         handleInput();
         runAI();
         updateGameState(deltaTime);
@@ -141,7 +154,6 @@ public class GameDesktopLauncher implements ApplicationListener {
         if (!(player instanceof Tank)) return;
         Tank tank = (Tank) player;
         if (tank.isMoving()) return;
-
         inputHandler.update();
         Direction direction = inputHandler.getLastDirection();
         if (direction != null) {
@@ -167,6 +179,13 @@ public class GameDesktopLauncher implements ApplicationListener {
                     graphic.getBounds(), graphic.getRotation());
         }
         batch.end();
+        if (showHealthBars) {
+            for (GameUnitGraphics graphic : graphics) {
+                if (graphic instanceof OverlayRenderable) {
+                    ((OverlayRenderable) graphic).renderOverlay(shapeRenderer);
+                }
+            }
+        }
     }
 
     @Override
