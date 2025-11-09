@@ -11,7 +11,7 @@ import ru.mipt.bit.platformer.tracker.OccupancyTracker;
 import java.util.Collections;
 import static org.junit.jupiter.api.Assertions.*;
 
-class AITankControllerTest {
+class AiTankRulerTest {
     private Field field;
 
     @BeforeEach
