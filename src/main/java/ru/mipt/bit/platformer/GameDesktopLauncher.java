@@ -16,15 +16,15 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import ru.mipt.bit.platformer.ai.AiTankRuler;
 import ru.mipt.bit.platformer.command.impl.FireCommand;
 import ru.mipt.bit.platformer.command.impl.MoveCommand;
 import ru.mipt.bit.platformer.command.impl.ToggleHealthBarsCommand;
 import ru.mipt.bit.platformer.config.GameConfig;
+import ru.mipt.bit.platformer.config.SpringConfig;
 import ru.mipt.bit.platformer.factory.GameUnitFactory;
 import ru.mipt.bit.platformer.factory.GraphicsFactory;
-import ru.mipt.bit.platformer.factory.impl.DefaultGameUnitFactory;
-import ru.mipt.bit.platformer.factory.impl.DefaultGraphicsFactory;
 import ru.mipt.bit.platformer.graphics.Field;
 import ru.mipt.bit.platformer.graphics.GameUnitGraphics;
 import ru.mipt.bit.platformer.graphics.OverlayRenderable;
@@ -41,7 +41,6 @@ import ru.mipt.bit.platformer.model.level.entity.Bullet;
 import ru.mipt.bit.platformer.tracker.OccupancyTracker;
 import ru.mipt.bit.platformer.util.TileMovement;
 
-import java.io.IOException;
 import java.util.*;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
@@ -57,7 +56,7 @@ public class GameDesktopLauncher implements ApplicationListener {
     private Field field;
     private MapRenderer mapRenderer;
     private TileMovement tileMovement;
-    private InputHandler inputHandler;
+    private final InputHandler inputHandler;
     private GameUnit player;
     private final List<Tank> tanks = new ArrayList<>();
     private final List<AiTankRuler> aiControllers = new ArrayList<>();
@@ -70,9 +69,10 @@ public class GameDesktopLauncher implements ApplicationListener {
     private boolean showHealthBars = false;
     private LevelModel level;
 
-    public GameDesktopLauncher() throws IOException {
-        this.unitFactory = new DefaultGameUnitFactory();
-        this.graphicsFactory = new DefaultGraphicsFactory();
+    public GameDesktopLauncher(GameUnitFactory unitFactory, GraphicsFactory graphicsFactory, InputHandler inputHandler) {
+        this.unitFactory = unitFactory;
+        this.graphicsFactory = graphicsFactory;
+        this.inputHandler = inputHandler;
     }
 
     @Override
@@ -85,10 +85,7 @@ public class GameDesktopLauncher implements ApplicationListener {
         tileMovement = new TileMovement(groundLayer, Interpolation.smooth);
         config = new GameConfig(groundLayer.getHeight(), groundLayer.getWidth(), 3);
         field = new Field(tiledMap, groundLayer);
-        inputHandler = new InputHandler();
-
         graphics = new ArrayList<>();
-
         level = new LevelModel(field);
         level.addObserver(new LevelObserver() {
             @Override
@@ -255,10 +252,14 @@ public class GameDesktopLauncher implements ApplicationListener {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(SpringConfig.class);
+        GameUnitFactory unitFactory = ctx.getBean(GameUnitFactory.class);
+        GraphicsFactory graphicsFactory = ctx.getBean(GraphicsFactory.class);
+        InputHandler inputHandler = ctx.getBean(InputHandler.class);
         Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
         config.setWindowedMode(1280, 1024);
-        new Lwjgl3Application(new GameDesktopLauncher(), config);
+        new Lwjgl3Application(new GameDesktopLauncher(unitFactory, graphicsFactory, inputHandler), config);
     }
 }
 
